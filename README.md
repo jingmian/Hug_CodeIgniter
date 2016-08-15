@@ -1,20 +1,21 @@
-= [Hug CodeIgniter](https://github.com/MS100/Hug_CodeIgniter)
+[Hug CodeIgniter](https://github.com/MS100/Hug_CodeIgniter)
+=============================
+
 **针对CodeIgniter的一些改进，适用于3.0以上版本**
 
 > CI3.0文档 http://codeigniter.org.cn/user_guide/
 
-- 改进：
+改进：
+--------------------
+
 ## 1. Form_validation 表单验证
 *      新增的验证规则看my_Form_validation.php里的注释
 *      $_FILES 里的数据在调用 $this->form_validation->run()之后会自动放到 $_POST 里
 
 
 ### 特别注意
-            CI本身的表单验证是有缺陷的
-                  例如规则field设为name[],post数据是name=aaa，可以通过验证
-                  再例如规则field设为name[type],post数据是name[type][]=aaa，也可以通过验证
-                  而实际上我们在使用中是希望通过设置field字段能控制到post的数据格式的
-                  如果不限制格式，那么之后的代码可能会出现警告，更严重的是数据库查询会报错
+CI本身的表单验证是有缺陷的，例如规则field设为name[],post数据是name=aaa，可以通过验证； 再例如规则field设为name[type],post数据是name[type][]=aaa，也可以通过验证；
+而实际上我们在使用中是希望通过设置field字段能控制到post的数据格式的，如果不限制格式那么之后的代码可能会出现警告，更严重的是数据库查询会报错。
 
 
       所以做了修改，表单验证里的字段完全对应post的表单
