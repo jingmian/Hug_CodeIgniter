@@ -8,9 +8,9 @@
       新增的验证规则看my_Form_validation.php里的注释
       $_FILES 里的数据在调用 $this->form_validation->run()之后会自动放到 $_POST 里
 
-*      *******
-*      特别注意
-*      *******
+
+- 特别注意
+
       CI本身的表单验证是有缺陷的
           例如规则field设为name[],post数据是name=aaa，可以通过验证
           再例如规则field设为name[type],post数据是name[type][]=aaa，也可以通过验证
