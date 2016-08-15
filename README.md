@@ -5,8 +5,8 @@
 
 ## 改进：
 * 1.Form_validation 表单验证
-      新增的验证规则看my_Form_validation.php里的注释
-      $_FILES 里的数据在调用 $this->form_validation->run()之后会自动放到 $_POST 里
+新增的验证规则看my_Form_validation.php里的注释
+$_FILES 里的数据在调用 $this->form_validation->run()之后会自动放到 $_POST 里
 
 
 - 特别注意
