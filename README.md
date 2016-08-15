@@ -20,42 +20,42 @@ CI本身的表单验证是有缺陷的，例如规则field设为name[],post数�
 
 ###用法：  
 -例如post字段a是个索引数组，并且需要是必填的正整数，那表单验证规则为
-array(
-      'field' => 'a[]',//此处的中括号限制a必须为一个数组，之后的rules会循环作用于a中的每一个元素
-      'label' => 'xxx',
-      'rules' => 'required|is_natural_no_zero',
-),
+            array(
+                  'field' => 'a[]',//此处的中括号限制a必须为一个数组，之后的rules会循环作用于a中的每一个元素
+                  'label' => 'xxx',
+                  'rules' => 'required|is_natural_no_zero',
+            ),
 
 -例如post字段a是个关联数组，并且需要a[b]是必填的正整数，那表单验证规则为
-array(
-      'field' => 'a[b]',//rules只会作用于a[b]
-      'label' => 'xxx',
-      'rules' => 'required|is_natural_no_zero',
-),
+            array(
+                  'field' => 'a[b]',//rules只会作用于a[b]
+                  'label' => 'xxx',
+                  'rules' => 'required|is_natural_no_zero',
+            ),
 
 -上传文件的验证配置：
-$config['cms/article/upload_image'] = array(
-      array(
-            'field' => 'image[name]',
-            'label' => '图片',
-            'rules' => 'required|file_allowed_type[image,word_document]',
-      ),
-      array(
-            'field' => 'image[size]',
-            'label' => '图片',
-            'rules' => 'file_size_max[2MB]',
-      ),
-      array(
-            'field' => 'image[error]',
-            'label' => '图片',
-            'rules' => 'file_upload_error[0]',
-      ),
-      /*array(
-             'field' => 'image[tmp_name]',
-             'label' => '图片',
-             'rules' => 'image_pixel_min[1,1]|image_pixel_max[1000,1000]||valid_image[image[name]]',
-      ),*/针对文件是图片的进一步校验
-);
+            $config['cms/article/upload_image'] = array(
+                  array(
+                        'field' => 'image[name]',
+                        'label' => '图片',
+                        'rules' => 'required|file_allowed_type[image,word_document]',
+                  ),
+                  array(
+                        'field' => 'image[size]',
+                        'label' => '图片',
+                        'rules' => 'file_size_max[2MB]',
+                  ),
+                  array(
+                        'field' => 'image[error]',
+                        'label' => '图片',
+                        'rules' => 'file_upload_error[0]',
+                  ),
+                  /*array(
+                         'field' => 'image[tmp_name]',
+                         'label' => '图片',
+                         'rules' => 'image_pixel_min[1,1]|image_pixel_max[1000,1000]||valid_image[image[name]]',
+                  ),*/针对文件是图片的进一步校验
+            );
 
 
 ##2.数据库支持主从和读写分离
