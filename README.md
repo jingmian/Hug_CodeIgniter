@@ -9,16 +9,16 @@
 --------------------
 
 ## 1. Form_validation 表单验证
-*      新增的验证规则看my_Form_validation.php里的注释
-*      $_FILES 里的数据在调用 $this->form_validation->run()之后会自动放到 $_POST 里
+* 新增的验证规则看my_Form_validation.php里的注释
+* $_FILES 里的数据在调用 $this->form_validation->run()之后会自动放到 $_POST 里
+* $_POST里的数据格式必须与表单验证里的配置完全对应
 
-
-### 特别注意
+###解释：
 CI本身的表单验证是有缺陷的，例如规则field设为name[],post数据是name=aaa，可以通过验证； 再例如规则field设为name[type],post数据是name[type][]=aaa，也可以通过验证；
 而实际上我们在使用中是希望通过设置field字段能控制到post的数据格式的，如果不限制格式那么之后的代码可能会出现警告，更严重的是数据库查询会报错。
 
 
-      所以做了修改，表单验证里的字段完全对应post的表单
+      
           例如post字段a是个索引数组，并且需要是必填的正整数，那表单验证规则为
                 array(
                     'field' => 'a[]',//此处的中括号限制a必须为一个数组，之后的rules会循环作用于a中的每一个元素
