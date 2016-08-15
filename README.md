@@ -36,28 +36,28 @@
 
 - 上传文件的验证配置：
 
-            $config['cms/article/upload_image'] = array(
-                  array(
-                        'field' => 'image[name]',
-                        'label' => '图片',
-                        'rules' => 'required|file_allowed_type[image,word_document]',
-                  ),
-                  array(
-                        'field' => 'image[size]',
-                        'label' => '图片',
-                        'rules' => 'file_size_max[2MB]',
-                  ),
-                  array(
-                        'field' => 'image[error]',
-                        'label' => '图片',
-                        'rules' => 'file_upload_error[0]',
-                  ),
-                  /*array(
-                         'field' => 'image[tmp_name]',
-                         'label' => '图片',
-                         'rules' => 'image_pixel_min[1,1]|image_pixel_max[1000,1000]||valid_image[image[name]]',
-                  ),*/针对文件是图片的进一步校验
-            );
+        $config['cms/article/upload_image'] = array(
+            array(
+                'field' => 'image[name]',
+                'label' => '图片',
+                'rules' => 'required|file_allowed_type[image,word_document]',
+            ),
+            array(
+                'field' => 'image[size]',
+                'label' => '图片',
+                'rules' => 'file_size_max[2MB]',
+            ),
+            array(
+                'field' => 'image[error]',
+                'label' => '图片',
+                'rules' => 'file_upload_error[0]',
+            ),
+            /*array(
+                 'field' => 'image[tmp_name]',
+                 'label' => '图片',
+                 'rules' => 'image_pixel_min[1,1]|image_pixel_max[1000,1000]||valid_image[image[name]]',
+            ),*/针对文件是图片的进一步校验
+        );
 
 
 ## 2.数据库支持主从和读写分离
@@ -69,41 +69,41 @@
 ### 用法： 
 - 主库
 
-    $db['test'] = array(
-          'hostname' => '127.0.0.1',
-          'port' => 3306,
-          'username' => 'test',
-          'password' => 'test',
-          'database' => 'test',
-          'dbdriver' => 'mysqli',
-          'pconnect' => false,
-          'db_debug' => false,
-          'cache_on' => false,
-          'char_set' => 'utf8',
-          'dbcollat' => 'utf8_general_ci',
-          'encrypt' => false,
-          'compress' => false,
-          'stricton' => true,
-          'master_slave' => true,//开启主从
-          'auto_switchover' => true,//开启自动切换，开启主从后才有效
-          'invalid_key_cache_time' => 60,//连接失败重试间隔秒数
-    );
+        $db['test'] = array(
+            'hostname' => '127.0.0.1',
+            'port' => 3306,
+            'username' => 'test',
+            'password' => 'test',
+            'database' => 'test',
+            'dbdriver' => 'mysqli',
+            'pconnect' => false,
+            'db_debug' => false,
+            'cache_on' => false,
+            'char_set' => 'utf8',
+            'dbcollat' => 'utf8_general_ci',
+            'encrypt' => false,
+            'compress' => false,
+            'stricton' => true,
+            'master_slave' => true,//开启主从
+            'auto_switchover' => true,//开启自动切换，开启主从后才有效
+            'invalid_key_cache_time' => 60,//连接失败重试间隔秒数
+        );
 
 - 从库
 
-    $db['test']['db_slave'][] = array(
-          'hostname' => '127.0.0.1',
-          'port' => 3307,
-          'username' => 'test',
-          'password' => 'test',
-          'database' => 'test',
-          'dbdriver' => 'mysqli',
-          'pconnect' => false,
-          'db_debug' => false,
-          'cache_on' => false,
-          'char_set' => 'utf8',
-          'dbcollat' => 'utf8_general_ci',
-          'encrypt' => false,
-          'compress' => false,
-          'stricton' => true,
-    );
+        $db['test']['db_slave'][] = array(
+                'hostname' => '127.0.0.1',
+                'port' => 3307,
+                'username' => 'test',
+                'password' => 'test',
+                'database' => 'test',
+                'dbdriver' => 'mysqli',
+                'pconnect' => false,
+                'db_debug' => false,
+                'cache_on' => false,
+                'char_set' => 'utf8',
+                'dbcollat' => 'utf8_general_ci',
+                'encrypt' => false,
+                'compress' => false,
+                'stricton' => true,
+        );
