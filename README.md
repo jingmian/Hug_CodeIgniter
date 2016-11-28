@@ -60,7 +60,7 @@
         );
 
 
-## 2.数据库支持主从和读写分离
+## 2.数据库支持多库和主从读写分离
 * SQL执行的时候才选择要链接数据库
 * 配置后会自动根据SQL语句来选择使用主库还是从库
 * 从库连接失败会自动切换到主库
@@ -107,3 +107,24 @@
             'compress' => false,
             'stricton' => true,
         );
+
+## 3.支持多缓存
+* 支持同时存在多套同类型的缓存
+* 配置类似于 **database.php**
+* 默认读取 `$cache_group`
+
+### 用法：
+
+        $cache_group = 'default';
+
+        $config['default'] = [
+            'adapter' => 'memcached',
+            'key_prefix' => 'my_',
+            'servers' => [
+                [
+                    'hostname' => '127.0.0.1',
+                    'port' => '11211',
+                    'weight' => '1',
+                ],
+            ],
+        ];
