@@ -10,10 +10,10 @@
 
 ## 1. Form_validation 表单验证
 * 新增的验证规则看my_Form_validation.php里的注释
-* $_FILES 里的数据在调用 $this->form_validation->run()之后会自动放到 $_POST 里
-* $_POST里的数据格式必须与表单验证里的配置完全对应
-* 更改CI自带的规则，在前面加上字端为空复合规则的逻辑，更改后 required|规则 效果同于 原来的规则。
-* 增加not_empty_str的规则，表示字端可以不传，但传了不能为空
+* **$_FILES** 里的数据在调用 `$this->form_validation->run() 或 set_rules()` 之后会放到 **$_POST** 里；
+* **$_POST** 里的数据格式必须与表单验证里的配置的格式完全对应，否则通不过验证；
+* 更改所有CI自带的规则，字端值为空字符或null时可通过验证。举例：如果设置规则为 is_natural，那么此字端不传或传空字符都可以通过规则，若要必填，还需加上 required；
+* 增加not_empty_str的规则，表示字端可以为 null，但不能为空字符。即：前端可以不传此字段，但不能传字段=''，一般用于一个验证规则被多处使用的时候；
 
 ### 解释：
   CI本身的表单验证是有缺陷的，例如规则field设为name[],post数据是name=aaa，可以通过验证；再例如规则field设为name[type],post数据是name[type][]=aaa，也可以通过验证；而实际上我们在使用中是希望通过设置field字段能控制到post的数据格式的，如果不限制格式那么之后的代码可能会出现警告，更严重的是数据库查询会报错。
