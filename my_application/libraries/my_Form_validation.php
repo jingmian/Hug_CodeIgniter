@@ -202,7 +202,9 @@ class toc_Form_validation extends CI_Form_validation
                     $row['index_array_deep']
                 );
             } elseif (isset($validation_array[$field])) {
-                $this->_field_data[$field]['postdata'] = $validation_array[$field];
+                $this->_field_data[$field]['postdata'] = is_array($validation_array[$field]) ? false : $validation_array[$field];
+            } else {
+                $this->_field_data[$field]['postdata'] = null;
             }
             //var_dump($this->_field_data[$field]['postdata']);exit;
         }
@@ -225,11 +227,71 @@ class toc_Form_validation extends CI_Form_validation
         }
 
         // Now we need to re-set the POST data with the new, processed data
-        empty($this->validation_data) && $this->_reset_post_array();
+        empty($this->validation_data) ? $this->_reset_post_array() : $this->_reset_validation_data();
 
         return ($total_errors === 0);
     }
 
+    // --------------------------------------------------------------------
+
+    /**
+     * Prepare rules
+     *
+     * Re-orders the provided rules in order of importance, so that
+     * they can easily be executed later without weird checks ...
+     *
+     * "Callbacks" are given the highest priority (always called),
+     * followed by 'required' (called if callbacks didn't fail),
+     * and then every next rule depends on the previous one passing.
+     *
+     * @param	array	$rules
+     * @return	array
+     */
+    protected function _prepare_rules($rules)
+    {
+        $new_rules = array();
+        $callbacks = array();
+
+        foreach ($rules as &$rule)
+        {
+            // Let 'required' always be the first (non-callback) rule
+            if ($rule === 'required')
+            {
+                array_unshift($new_rules, 'required');
+            }
+            // 'isset' is a kind of a weird alias for 'required' ...
+            elseif ($rule === 'isset' && (empty($new_rules) OR $new_rules[0] !== 'required'))
+            {
+                array_unshift($new_rules, 'isset');
+            }
+            elseif ($rule === 'not_empty_str' && (empty($new_rules) OR $new_rules[0] !== 'required'))
+            {
+                array_unshift($new_rules, 'not_empty_str');
+            }
+            // The old/classic 'callback_'-prefixed rules
+            elseif (is_string($rule) && strncmp('callback_', $rule, 9) === 0)
+            {
+                $callbacks[] = $rule;
+            }
+            // Proper callables
+            elseif (is_callable($rule))
+            {
+                $callbacks[] = $rule;
+            }
+            // "Named" callables; i.e. array('name' => $callable)
+            elseif (is_array($rule) && isset($rule[0], $rule[1]) && is_callable($rule[1]))
+            {
+                $callbacks[] = $rule;
+            }
+            // Everything else goes at the end of the queue
+            else
+            {
+                $new_rules[] = $rule;
+            }
+        }
+
+        return array_merge($callbacks, $new_rules);
+    }
 
     // --------------------------------------------------------------------
 
@@ -277,8 +339,7 @@ class toc_Form_validation extends CI_Form_validation
                 // somebody messing with the form on the client side, so we'll just consider
                 // it an empty field
                 if (is_array($this->_field_data[$row['field']]['postdata'])) {
-                    $postdata = [];
-                    $rule = 'not_array';
+                    $postdata = false;
                 } else {
                     $postdata = $this->_field_data[$row['field']]['postdata'];
                 }
@@ -315,6 +376,10 @@ class toc_Form_validation extends CI_Form_validation
                 && !in_array($rule, ['required', 'isset', 'matches', 'not_empty_str'], true)
             ) {
                 continue;
+            }
+
+            if ($postdata === false) {
+                $rule = 'not_false';
             }
 
             // Call the function that corresponds to the rule
@@ -414,22 +479,27 @@ class toc_Form_validation extends CI_Form_validation
      */
     protected function _my_reduce_array($array, $keys, $i = 0, $index_array_deep)
     {
-        //var_dump($array, $keys, $index_array_deep);
         if (is_array($array)) {
+            //var_dump($array, $keys, $i);echo '===';
             if (isset($keys[$i], $array[$keys[$i]])) {
                 return $this->_my_reduce_array($array[$keys[$i]], $keys, ($i + 1), $index_array_deep);
             }
+
             if ($index_array_deep === $i && $this->is_one_dimensional_array($array)) {
                 return $array;
             }
-        } elseif (!is_array($array)) {
+
+            if (isset($keys[$i]) && !isset($array[$keys[$i]])) {
+                return null;
+            }
+        } else {
             // NULL must be returned for empty fields
-            if (!$index_array_deep && $array !== '' && !isset($keys[$i])) {
+
+            if (!$index_array_deep && !isset($keys[$i])) {
                 return $array;
             }
         }
-
-        return null;
+        return false;
     }
 
     /**
@@ -459,34 +529,92 @@ class toc_Form_validation extends CI_Form_validation
     {
         foreach ($this->_field_data as $field => $row) {
             //----------------------此处把获取的值赋值会$_POST,修改为获取的为null也赋值回去------------------------
-            //if($row['postdata'] !== null){
-            if ($row['is_array'] === false) {
-                isset($_POST[$field]) && $_POST[$field] = $row['postdata'];
-            } else {
-                // start with a reference
-                $post_ref =& $_POST;
-
-                // before we assign values, make a reference to the right POST key
-                if (count($row['keys']) === 1) {
-                    $post_ref =& $post_ref[current($row['keys'])];
+            if ($row['postdata'] !== null && $row['postdata'] !== false) {
+                if ($row['is_array'] === false) {
+                    isset($_POST[$field]) && $_POST[$field] = $row['postdata'];
                 } else {
-                    foreach ($row['keys'] as $val) {
-                        //---------------------字段下标不存在时创建下标-------------------------
-                        is_array($post_ref) || $post_ref = [];
-                        isset($post_ref[$val]) || $post_ref[$val] = null;
-                        $post_ref =& $post_ref[$val];
+                    // start with a reference
+                    //
+
+                    // before we assign values, make a reference to the right POST key
+                    if (count($row['keys']) === 1) {
+                        $_POST[current($row['keys'])] = $row['postdata'];
+                    } else {
+                        $post_ref =& $_POST;
+                        foreach ($row['keys'] as $val) {
+                            //---------------------字段下标不存在时创建下标-------------------------
+                            //is_array($post_ref) || $post_ref = [];
+                            //isset($post_ref[$val]) || $post_ref[$val] = null;
+                            $post_ref =& $post_ref[$val];
+                        }
+                        $post_ref = $row['postdata'];
                     }
                 }
-
-                $post_ref = $row['postdata'];
             }
-            //}
         }
     }
 
-    public function not_array($str)
+
+    // --------------------------------------------------------------------
+
+    /**
+     * By default, form validation uses the $_POST array to validate
+     * If an array is set through this method, then this array will
+     * be used instead of the $_POST array
+     * Note that if you are validating multiple arrays, then the
+     * reset_validation() function should be called after validating
+     * each array due to the limitations of CI's singleton
+     *
+     * @param    array $data
+     *
+     * @return    CI_Form_validation
+     */
+    public function set_validation_data(array &$data)
     {
-        return !is_array($str);
+        if (!empty($data)) {
+            $this->validation_data = &$data;
+        }
+
+        return $this;
+    }
+
+    // --------------------------------------------------------------------
+
+
+    protected function _reset_validation_data()
+    {
+        foreach ($this->_field_data as $field => $row) {
+            //----------------------此处把获取的值赋值会$_POST,修改为获取的为null也赋值回去------------------------
+            if ($row['postdata'] !== null && $row['postdata'] !== false) {
+                if ($row['is_array'] === false) {
+                    isset($this->validation_data[$field]) && $this->validation_data[$field] = $row['postdata'];
+                } else {
+                    // start with a reference
+                    //
+
+                    // before we assign values, make a reference to the right POST key
+                    if (count($row['keys']) === 1) {
+                        $this->validation_data[current($row['keys'])] = $row['postdata'];
+                    } else {
+                        $post_ref =& $this->validation_data;
+                        foreach ($row['keys'] as $val) {
+                            //---------------------字段下标不存在时创建下标-------------------------
+                            //is_array($post_ref) || $post_ref = [];
+                            //isset($post_ref[$val]) || $post_ref[$val] = null;
+                            $post_ref =& $post_ref[$val];
+                        }
+                        $post_ref = $row['postdata'];
+                    }
+                }
+            }
+        }
+        unset($this->validation_data);
+        $this->validation_data = [];
+    }
+
+    protected function not_false($value)
+    {
+        return $value !== false;
     }
 
     public function file_upload_error($error, &$param)
@@ -1052,43 +1180,6 @@ class toc_Form_validation extends CI_Form_validation
     }
 
     /**
-     * 过滤表情符号
-     *
-     * @param      $str
-     * @param null $replace
-     *
-     * @return mixed|string
-     */
-    public function filter_emoji($str, $replace = null)
-    {
-        static $map;
-        if (!isset ($str) || $str == '') {
-            return true;
-        }
-
-        if (!isset($map)) {
-            if ($this->CI->config->load('emoji', true, true)) {
-                $map = $this->CI->config->config['emoji'];
-            } else {
-                $map = [];
-            }
-        }
-
-
-        if (!empty($map) && !empty($str)) {
-            $replace = empty($replace) ? '' : strtr(urlencode($replace), ['%' => '\x']);
-
-            $str = strtr(urlencode($str), ['%' => '\x']);
-            $str = str_ireplace($map, $replace, $str);
-            $str = strtr($str, ['\x' => '%']);
-
-            $str = urldecode($str);
-        }
-
-        return $str;
-    }
-
-    /**
      * 设置默认值
      *
      * @param $str
@@ -1159,19 +1250,20 @@ class toc_Form_validation extends CI_Form_validation
         return $str;
     }
 
-
     // --------------------------------------------------------------------
 
     /**
-     * Reset _field_data vars
+     * Reset validation vars
      * Prevents subsequent validation routines from being affected by the
      * results of any previous validation routine due to the CI singleton.
      *
      * @return    CI_Form_validation
      */
-    public function reset_field_data()
+    public function reset_error()
     {
-        $this->_field_data = [];
+        $this->_error_array = [];
+        $this->_error_messages = [];
+        $this->error_string = '';
         return $this;
     }
 }
