@@ -236,56 +236,41 @@ class toc_Form_validation extends CI_Form_validation
 
     /**
      * Prepare rules
-     *
      * Re-orders the provided rules in order of importance, so that
      * they can easily be executed later without weird checks ...
-     *
      * "Callbacks" are given the highest priority (always called),
      * followed by 'required' (called if callbacks didn't fail),
      * and then every next rule depends on the previous one passing.
      *
-     * @param	array	$rules
-     * @return	array
+     * @param    array $rules
+     *
+     * @return    array
      */
     protected function _prepare_rules($rules)
     {
-        $new_rules = array();
-        $callbacks = array();
+        $new_rules = [];
+        $callbacks = [];
 
-        foreach ($rules as &$rule)
-        {
+        foreach ($rules as &$rule) {
             // Let 'required' always be the first (non-callback) rule
-            if ($rule === 'required')
-            {
+            if ($rule === 'required') {
                 array_unshift($new_rules, 'required');
-            }
-            // 'isset' is a kind of a weird alias for 'required' ...
-            elseif ($rule === 'isset' && (empty($new_rules) OR $new_rules[0] !== 'required'))
-            {
+            } // 'isset' is a kind of a weird alias for 'required' ...
+            elseif ($rule === 'isset' && (empty($new_rules) OR $new_rules[0] !== 'required')) {
                 array_unshift($new_rules, 'isset');
-            }
-            elseif ($rule === 'not_empty_str' && (empty($new_rules) OR $new_rules[0] !== 'required'))
-            {
+            } elseif ($rule === 'not_empty_str' && (empty($new_rules) OR $new_rules[0] !== 'required')) {
                 array_unshift($new_rules, 'not_empty_str');
-            }
-            // The old/classic 'callback_'-prefixed rules
-            elseif (is_string($rule) && strncmp('callback_', $rule, 9) === 0)
-            {
+            } // The old/classic 'callback_'-prefixed rules
+            elseif (is_string($rule) && strncmp('callback_', $rule, 9) === 0) {
                 $callbacks[] = $rule;
-            }
-            // Proper callables
-            elseif (is_callable($rule))
-            {
+            } // Proper callables
+            elseif (is_callable($rule)) {
                 $callbacks[] = $rule;
-            }
-            // "Named" callables; i.e. array('name' => $callable)
-            elseif (is_array($rule) && isset($rule[0], $rule[1]) && is_callable($rule[1]))
-            {
+            } // "Named" callables; i.e. array('name' => $callable)
+            elseif (is_array($rule) && isset($rule[0], $rule[1]) && is_callable($rule[1])) {
                 $callbacks[] = $rule;
-            }
-            // Everything else goes at the end of the queue
-            else
-            {
+            } // Everything else goes at the end of the queue
+            else {
                 $new_rules[] = $rule;
             }
         }
@@ -373,7 +358,7 @@ class toc_Form_validation extends CI_Form_validation
                 ($postdata === null OR $postdata === '')
                 && $callback === false
                 && $callable === false
-                && !in_array($rule, ['required', 'isset', 'matches', 'not_empty_str'], true)
+                && !in_array($rule, ['required', 'isset', 'matches', 'not_empty_str', 'default_value'], true)
             ) {
                 continue;
             }
@@ -887,10 +872,6 @@ class toc_Form_validation extends CI_Form_validation
      */
     public function relate_other_field($str, $param)
     {
-        if (!isset ($str) || $str == '') {
-            return true;
-        }
-
         $arr = explode(',', $param, 4);
         $other_field = $arr[0];
         $default_value = $arr[1];
@@ -926,10 +907,6 @@ class toc_Form_validation extends CI_Form_validation
      */
     public function valid_card($str)
     {
-        if (!isset ($str) || $str == '') {
-            return true;
-        }
-
         if (!preg_match('/^\d{15}(?:\d{2}(?:\d|X|x))?$/', $str)) {
             return false;
         }
@@ -975,10 +952,6 @@ class toc_Form_validation extends CI_Form_validation
      */
     public function valid_username($str)
     {
-        if (!isset($str) || $str == '') {
-            return true;
-        }
-
         return filter_var($str, FILTER_VALIDATE_EMAIL) ? true : $this->valid_phone($str);
     }
 
@@ -991,11 +964,11 @@ class toc_Form_validation extends CI_Form_validation
      */
     public function valid_phone($str)
     {
-        if (!isset($str) || $str == '') {
-            return true;
+        if (strlen($str) != 11) {
+            return false;
         }
 
-        return (intval($str) < 10000000000 or intval($str) > 20000000000) ? false : true;
+        return ($str > 10000000000 && $str < 20000000000) ? true : false;
     }
 
     /**
@@ -1007,10 +980,6 @@ class toc_Form_validation extends CI_Form_validation
      */
     public function valid_tel($str)
     {
-        if (!isset($str) || $str == '') {
-            return true;
-        }
-
         return preg_match("/^\d+(?:\-\d+)*$/ix", $str) ? true : false;
     }
 
@@ -1024,9 +993,6 @@ class toc_Form_validation extends CI_Form_validation
      */
     public function valid_md5($str, $length = null)
     {
-        if (!isset($str) || $str == '') {
-            return true;
-        }
         empty($length) && $length = 32;
 
         //return (strlen($str) != 32) ? false : true;
@@ -1043,10 +1009,6 @@ class toc_Form_validation extends CI_Form_validation
      */
     public function max_length_gbk($str, $val)
     {
-        if (!isset ($str) || $str == '') {
-            return true;
-        }
-
         if (preg_match("/[^0-9]/", $val)) {
             return false;
         }
@@ -1069,10 +1031,6 @@ class toc_Form_validation extends CI_Form_validation
      */
     public function min_length_gbk($str, $val)
     {
-        if (!isset ($str) || $str == '') {
-            return true;
-        }
-
         if (preg_match("/[^0-9]/", $val)) {
             return false;
         }
@@ -1095,10 +1053,6 @@ class toc_Form_validation extends CI_Form_validation
      */
     public function date_later_than($end_str, $start_str)
     {
-        if (!isset ($end_str) || $end_str == '') {
-            return true;
-        }
-
         $start = strtotime($start_str);
         if ($start === false) {
             $start_str = $this->_field_data[$start_str]['postdata'];
@@ -1150,10 +1104,6 @@ class toc_Form_validation extends CI_Form_validation
      */
     public function valid_date($str, $future = false)
     {
-        if (!isset ($str) || $str == '') {
-            return true;
-        }
-
         $str = strtr(
             $str,
             [

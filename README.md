@@ -14,7 +14,7 @@
 ### 使用注意
 1. **$_FILES** 里的数据在调用 `$this->form_validation->run() 或 set_rules()` 之后会放到 **$_POST** 里；
 2. **$_POST** 里的数据格式必须与表单验证里的配置的格式完全对应，否则通不过验证；
-3. **注意** CI 自带的规则，字段值为空字符或null时可通过除了 `'required', 'isset', 'matches', 'not_empty_str'` 这四个规则外的所有规则验证。举例：如果设置规则为 is_natural，那么此字段不传或传空字符都可以通过规则，若要必填，还需加上 required；
+3. **注意** CI 自带的规则，字段值为空字符或null时可通过除了 `'required', 'isset', 'matches', 'not_empty_str', 'default_value'` 这几个规则外的所有规则验证。举例：如果设置规则为 is_natural，那么此字段不传或传空字符都可以通过规则，若要必填，还需加上 required；
 4. 增加 `not_empty_str` 方法，表示字段可以为 NULL，但不能为空字符。即：前端可以不传此字段，但不能传字段空字符，一般用于一个验证规则有多种提交情况的时候；
 5. 在 filter_emoji_helper.php 中增加了 `filter_emoji` 函数，可在表单验证时用来过滤表情符号；另表单验证时普通字符串数据酌情使用 trim 过滤前后空字符。
 6. 新增 `set_validation_data(&$data)` 和 `_reset_validation_data()` 方法，可使表单验证的预处理字符方法（例如：`trim` 和 `filter_emoji`）同样作用于自定义数据。
