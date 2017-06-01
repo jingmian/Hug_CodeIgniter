@@ -1,7 +1,7 @@
 <?php
 
 
-class toc_Form_validation extends CI_Form_validation
+class my_Form_validation extends CI_Form_validation
 {
     function __construct($rules = [])
     {
@@ -32,9 +32,9 @@ class toc_Form_validation extends CI_Form_validation
 
         // No reason to set rules if we have no POST data
         // or a validation array has not been specified
-        if ($this->CI->input->method() !== 'post' && empty($this->validation_data)) {
+        /*if ($this->CI->input->method() !== 'post' && empty($this->validation_data)) {
             return $this;
-        }
+        }*/
 
         // If an array was passed via the first parameter instead of individual string
         // values we cycle through it and recursively call this function.
@@ -1211,6 +1211,16 @@ class toc_Form_validation extends CI_Form_validation
      */
     public function reset_error()
     {
+        $this->_error_array = [];
+        $this->_error_messages = [];
+        $this->error_string = '';
+        return $this;
+    }
+
+    public function reset_validation()
+    {
+        $this->validation_data = [];
+        $this->_field_data = [];
         $this->_error_array = [];
         $this->_error_messages = [];
         $this->error_string = '';
