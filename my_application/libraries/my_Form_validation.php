@@ -32,9 +32,9 @@ class my_Form_validation extends CI_Form_validation
 
         // No reason to set rules if we have no POST data
         // or a validation array has not been specified
-        /*if ($this->CI->input->method() !== 'post' && empty($this->validation_data)) {
+        if ($this->CI->input->method() !== 'post' && empty($this->validation_data)) {
             return $this;
-        }*/
+        }
 
         // If an array was passed via the first parameter instead of individual string
         // values we cycle through it and recursively call this function.
